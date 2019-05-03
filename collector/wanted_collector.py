@@ -4,6 +4,7 @@ import re
 import requests
 from konlpy.tag import Okt
 
+
 def collect_from_wanted(start_url):
 
     detail_urls = _get_detail_urls(start_url)
