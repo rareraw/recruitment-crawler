@@ -80,6 +80,3 @@ def extract_english_nouns(text):
 def save_to_db(requirements_nouns, preferred_points_nouns):
     pass
 
-
-if __name__ == '__main__':
-    collect_from_wanted('https://www.wanted.co.kr/api/v4/jobs?1555240925294&country=kr&tag_type_id=518&job_sort=job.popularity_order&years=-1&employee_count=all&locations=all')
