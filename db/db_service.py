@@ -17,11 +17,3 @@ class DBService():
 
         return cursor.fetchone()
 
-
-if __name__ == '__main__':
-    dbService = DBService(host='mariadb-instance.c44qfi0htc1o.ap-northeast-2.rds.amazonaws.com'
-                          , user='rareraw', password='statmaria', db='stats', charset='utf8')
-    sql = 'select * from RECRUITMENT_SITE where is_use = %s and name = %s'
-    row = dbService.select_one(sql, (1, 'wanted'))
-    print(row['crwaling_root_urls'])
-    dbService.close()
