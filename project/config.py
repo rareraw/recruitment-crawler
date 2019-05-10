@@ -1,8 +1,10 @@
 import json
+import os
 
 
 class Config:
-    configJson = json.load(open('.projectconfig', 'r'))
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    configJson = json.load(open(ROOT_DIR + '/.projectconfig', 'r'))
 
     @staticmethod
     def get(find_key):
