@@ -13,14 +13,4 @@ if __name__ == '__main__':
 
     print(row)
 
-    # insert_collection_data = '''INSERT INTO stats.RAW_COLLECTION(years_of_exprience, recruitment_site_seq, company, condition_type, collection_date, create_id)
-    #     VALUES (
-    #     -1, 1,
-    #     '테스트회사',
-    #     'REQUIRED',
-    #     '20190430',
-    #     'system')'''
-    #
-    # cursor = dbService.get_cursor()
-    # cursor.execute(insert_collection_data)
     dbService.close()
