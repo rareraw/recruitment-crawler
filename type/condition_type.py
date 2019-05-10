@@ -1,6 +1,6 @@
-# import enum
-#
-#
-# class ConditionType(enum.Enum):
-#     REQUIRED = 1
-#     PREFERRED = 2
+import enum
+
+
+class ConditionType(enum.Enum):
+    REQUIRED = 'REQUIRED'
+    PREFERRED = 'PREFERRED'
