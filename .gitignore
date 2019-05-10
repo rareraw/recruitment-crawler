@@ -105,3 +105,8 @@ venv.bak/
 
 # etc
 .idea/
+
+# projectconfig
+.projectconfig
+
+
