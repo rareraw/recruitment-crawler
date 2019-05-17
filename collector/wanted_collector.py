@@ -4,18 +4,23 @@ import re
 import requests
 from konlpy.tag import Okt
 
+from db.db_service import DBService
+from db.query_mapper import QueryMapper
+from model.condition_type import ConditionType
+from project.config import Config
+
 
 def collect_from_wanted(start_url):
 
     detail_urls = _get_detail_urls(start_url)
     print('detail_url_count', len(detail_urls))
 
-    requirements_nouns, preferred_points_nouns = get_nouns_from_detail_url(detail_urls)
+    recruit_notices = get_nouns_from_detail_url(detail_urls)
 
-    print(requirements_nouns)
-    print(preferred_points_nouns)
+    # print(requirements_nouns)
+    # print(preferred_points_nouns)
 
-    save_to_db(requirements_nouns, preferred_points_nouns)
+    store_to_db(recruit_notices)
 
 
 def _get_detail_urls(start_url):
@@ -33,24 +38,33 @@ def _get_detail_urls(start_url):
 
 def get_nouns_from_detail_url(detail_urls):
 
-    requirements = ''
-    preferred_points = ''
+    recruit_notices = []
 
     for detail_url in detail_urls:
         resp = requests.get(detail_url)
         resp_body = json.loads(resp.text)
+        print("resp body : ", resp_body)
+
+        company = resp_body['job']['company']['name']
         detail = resp_body['job']['detail']
-        requirements += detail['requirements']
-        preferred_points += detail['preferred_points']
+        requirements = detail['requirements']
+        preferred_points = detail['preferred_points']
 
-    requirements_nouns = extract_english_nouns(requirements)
-    preferred_points_nouns = extract_english_nouns(preferred_points)
+        requirements_nouns = extract_english_nouns(requirements)
+        requirements_nouns += extract_korean_nouns(requirements)
 
-    requirements_nouns += extract_korean_nouns(requirements)
-    preferred_points_nouns += extract_korean_nouns(preferred_points)
+        preferred_points_nouns = extract_english_nouns(preferred_points)
+        preferred_points_nouns += extract_korean_nouns(preferred_points)
 
-    # print(requirements, preferred_points)
-    return requirements_nouns, preferred_points_nouns
+        recruit_notices.append({'company': company,
+                                'condition_type': ConditionType.REQUIRED,
+                                "keywords": requirements_nouns})
+
+        recruit_notices.append({'company': company,
+                                'condition_type': ConditionType.PREFERRED,
+                                "keywords": preferred_points_nouns})
+
+    return recruit_notices
 
 
 def extract_korean_nouns(text):
@@ -74,9 +88,34 @@ def extract_korean_nouns(text):
 
 
 def extract_english_nouns(text):
-    return re.findall(r'[a-zA-Z\-]{2,}', text)
+    nouns = re.findall(r'[a-zA-Z\-]{2,}', text)
+    uppercase_nouns = [noun.upper() for noun in nouns]
+    return uppercase_nouns
 
 
-def save_to_db(requirements_nouns, preferred_points_nouns):
-    pass
+def store_to_db(recruit_notices):
+    db_service = DBService(host=Config.get('db.url')
+                          , user=Config.get('db.username')
+                          , password=Config.get('db.password')
+                          , db=Config.get('db.name')
+                          , charset='utf8')
 
+    cursor = db_service.get_cursor();
+
+    for recruit_notice in recruit_notices:
+
+        # print(recruit_notice['company'], str(recruit_notice['condition_type']))
+
+        query = QueryMapper.insert_raw_collection()
+        cursor.execute(query, (recruit_notice['company']
+                               , recruit_notice['condition_type'].value)
+                       )
+
+        raw_collection_id = db_service.get_last_id()
+
+        keywords = recruit_notice['keywords']
+        for keyword in keywords:
+            query = QueryMapper.insert_raw_word()
+            cursor.execute(query, (keyword, raw_collection_id))
+
+    db_service.commit_and_close()
