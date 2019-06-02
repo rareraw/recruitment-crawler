@@ -12,13 +12,15 @@ from project.config import Config
 
 def collect_from_wanted():
 
+    print(">>> crawling start...")
+
     wanted = _get_wanted_info()
     root_url = wanted['crwaling_root_urls']
     query_str = '1555240925294&country=kr&tag_type_id=518&job_sort=job.popularity_order&years=-1&employee_count=all&locations=all'
     start_url = root_url + '?' + query_str
 
     detail_urls = _get_detail_urls(start_url)
-    print('detail_url_count', len(detail_urls))
+    # print('detail_url_count', len(detail_urls))
 
     recruit_notices = get_nouns_from_detail_url(detail_urls)
 
