@@ -10,7 +10,12 @@ from model.condition_type import ConditionType
 from project.config import Config
 
 
-def collect_from_wanted(start_url):
+def collect_from_wanted():
+
+    wanted = _get_wanted_info()
+    root_url = wanted['crwaling_root_urls']
+    query_str = '1555240925294&country=kr&tag_type_id=518&job_sort=job.popularity_order&years=-1&employee_count=all&locations=all'
+    start_url = root_url + '?' + query_str
 
     detail_urls = _get_detail_urls(start_url)
     print('detail_url_count', len(detail_urls))
@@ -20,7 +25,16 @@ def collect_from_wanted(start_url):
     # print(requirements_nouns)
     # print(preferred_points_nouns)
 
-    store_to_db(recruit_notices)
+    store_to_db(recruit_notices, wanted['seq'])
+
+def _get_wanted_info():
+    db_service = DBService(host=Config.get('db.url')
+                           , user=Config.get('db.username')
+                           , password=Config.get('db.password')
+                           , db=Config.get('db.name')
+                           , charset='utf8')
+
+    return db_service.select_one(QueryMapper.select_recruitment_site_query, 'Wanted')
 
 
 def _get_detail_urls(start_url):
@@ -43,7 +57,7 @@ def get_nouns_from_detail_url(detail_urls):
     for detail_url in detail_urls:
         resp = requests.get(detail_url)
         resp_body = json.loads(resp.text)
-        print("resp body : ", resp_body)
+        # print("resp body : ", resp_body)
 
         company = resp_body['job']['company']['name']
         detail = resp_body['job']['detail']
@@ -93,7 +107,7 @@ def extract_english_nouns(text):
     return uppercase_nouns
 
 
-def store_to_db(recruit_notices):
+def store_to_db(recruit_notices, site_seq):
     db_service = DBService(host=Config.get('db.url')
                           , user=Config.get('db.username')
                           , password=Config.get('db.password')
@@ -104,18 +118,13 @@ def store_to_db(recruit_notices):
 
     for recruit_notice in recruit_notices:
 
-        # print(recruit_notice['company'], str(recruit_notice['condition_type']))
-
-        query = QueryMapper.insert_raw_collection()
-        cursor.execute(query, (recruit_notice['company']
-                               , recruit_notice['condition_type'].value)
-                       )
+        cursor.execute(QueryMapper.insert_raw_collection_query,
+                       (site_seq, recruit_notice['company'], recruit_notice['condition_type'].value))
 
         raw_collection_id = db_service.get_last_id()
 
         keywords = recruit_notice['keywords']
         for keyword in keywords:
-            query = QueryMapper.insert_raw_word()
-            cursor.execute(query, (keyword, raw_collection_id))
+            cursor.execute(QueryMapper.insert_raw_word_query, (keyword, raw_collection_id))
 
     db_service.commit_and_close()

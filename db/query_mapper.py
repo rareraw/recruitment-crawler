@@ -16,11 +16,11 @@ class QueryMapper:
                                         `create_id`)
                                         VALUES
                                         (
-                                        0,
-                                        1,
+                                        -1,
                                         %s,
                                         %s,
-                                        '2019-05-17',
+                                        %s,
+                                        current_date(),
                                         'system')'''
 
     insert_raw_word_query = '''INSERT INTO `stats`.`RAW_WORD`
@@ -32,11 +32,7 @@ class QueryMapper:
                                 %s,
                                 %s);
                             '''
-                                    
-    @staticmethod
-    def insert_raw_collection():
-        return QueryMapper.insert_raw_collection_query
 
-    @staticmethod
-    def insert_raw_word():
-        return QueryMapper.insert_raw_word_query
+    select_recruitment_site_query = '''SELECT * FROM RECRUITMENT_SITE
+                                        WHERE name = %s                            
+                                    '''
