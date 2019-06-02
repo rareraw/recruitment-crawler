@@ -8,7 +8,7 @@
 class QueryMapper:
     insert_raw_collection_query = '''INSERT INTO `stats`.`RAW_COLLECTION`
                                         (
-                                        `years_of_exprience`,
+                                        `years_of_experience`,
                                         `recruitment_site_seq`,
                                         `company`,
                                         `condition_type`,
