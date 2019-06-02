@@ -36,3 +36,11 @@ class QueryMapper:
     select_recruitment_site_query = '''SELECT * FROM RECRUITMENT_SITE
                                         WHERE name = %s                            
                                     '''
+
+    insert_keyword_statistics_query = '''insert into keyword_statistics(keyword, count, collection_date)
+                                          select D.word, count(*) as cnt, collection_date 
+                                            from raw_collection M inner join raw_word D
+                                                on M.seq = D.seq
+                                            where M.collection_date = current_date()
+                                            group by D.word
+                                        '''
