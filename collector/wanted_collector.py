@@ -69,10 +69,10 @@ def get_nouns_from_detail_url(detail_urls):
         preferred_points = detail['preferred_points']
 
         requirements_nouns = extract_english_nouns(requirements)
-        requirements_nouns += extract_korean_nouns(requirements)
+        requirements_nouns += extract_korean_keyword(requirements)
 
         preferred_points_nouns = extract_english_nouns(preferred_points)
-        preferred_points_nouns += extract_korean_nouns(preferred_points)
+        preferred_points_nouns += extract_korean_keyword(preferred_points)
 
         recruit_notices.append({'company': company,
                                 'condition_type': ConditionType.REQUIRED,
@@ -85,9 +85,9 @@ def get_nouns_from_detail_url(detail_urls):
     return recruit_notices
 
 
-def extract_korean_nouns(text):
+def extract_korean_keyword(text):
 
-    except_nouns = ['개발', '경험', '실무', '사용', '기반', '이상', '구축', '자유', '자재', '활용',
+    except_keywords = ['개발', '경험', '실무', '사용', '기반', '이상', '구축', '자유', '자재', '활용',
                     '지식', '역량', '통신', '프로젝트', '성향', '가능', '서비스', '배포', '관리',
                     '경력', '습듭', '열정', '지속', '대해', '연구', '관심', '코드', '개발자',
                     '최소', '마음', '적극', '이해', '통한', '고집', '프로세스', '능력', '대한',
@@ -95,12 +95,12 @@ def extract_korean_nouns(text):
                     '어려움', '위해', '노력', '학습', '나은', '주도', '이용', '특허', '흥미',
                     '도구', '산업', '고민', '환경', '스펙', '등록', '의견', '환경', '근무',
                     '무관', '언어', '자신', '매우', '과제', '시장', '확신', '논리', '분석',
-                    '학력', '연차', '문법', '숙련']
+                    '학력', '연차', '문법', '숙련', '프로', '파악', '파일', '카메라', '즐거움', '책임감']
 
     nouns = Okt().nouns(text)
     filtered_nouns = []
     for noun in nouns:
-        if len(noun) > 1 and noun not in except_nouns:
+        if len(noun) > 1 and noun not in except_keywords:
             filtered_nouns.append(noun)
     return filtered_nouns
 
