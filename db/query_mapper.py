@@ -6,7 +6,7 @@
 #     @staticmethod
 #     def get(find_key):
 class QueryMapper:
-    insert_raw_collection_query = '''INSERT INTO `stats`.`RAW_COLLECTION`
+    insert_raw_collection_query = '''INSERT INTO `stats`.`RAW_COLLECTIONS`
                                         (
                                         `years_of_experience`,
                                         `recruitment_site_seq`,
@@ -23,7 +23,7 @@ class QueryMapper:
                                         current_date(),
                                         'system')'''
 
-    insert_raw_word_query = '''INSERT INTO `stats`.`RAW_WORD`
+    insert_raw_word_query = '''INSERT INTO `stats`.`RAW_WORDS`
                                 (
                                 `word`,
                                 `raw_collection_seq`)
@@ -33,13 +33,13 @@ class QueryMapper:
                                 %s);
                             '''
 
-    select_recruitment_site_query = '''SELECT * FROM RECRUITMENT_SITE
+    select_recruitment_site_query = '''SELECT * FROM RECRUITMENT_SITES
                                         WHERE name = %s                            
                                     '''
 
     insert_keyword_statistics_query = '''insert into keyword_statistics(keyword, count, collection_date)
                                           select D.word, count(*) as cnt, collection_date 
-                                            from raw_collection M inner join raw_word D
+                                            from raw_collections M inner join raw_words D
                                                 on M.seq = D.seq
                                             where M.collection_date = current_date()
                                             group by D.word
