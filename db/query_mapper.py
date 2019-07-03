@@ -37,9 +37,9 @@ class QueryMapper:
                                         WHERE name = %s                            
                                     '''
 
-    insert_keyword_statistics_query = '''insert into keyword_statistics(keyword, count, collection_date)
+    insert_keyword_statistics_query = '''insert into KEYWORD_STATISTICS(keyword, count, collection_date)
                                           select D.word, count(*) as cnt, collection_date 
-                                            from raw_collections M inner join raw_words D
+                                            from RAW_COLLECTIONS M inner join RAW_WORDS D
                                                 on M.seq = D.seq
                                             where M.collection_date = current_date()
                                             group by D.word
