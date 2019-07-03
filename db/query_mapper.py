@@ -44,3 +44,11 @@ class QueryMapper:
                                             where M.collection_date = current_date()
                                             group by D.word
                                         '''
+
+    insert_condition_statistics_query = '''insert into CONDITION_STATISTICS (keyword, condition_type, count, collection_date)
+                                            select D.word, M.condition_type, count(*) as cnt, collection_date 
+                                                from RAW_COLLECTIONS M inner join RAW_WORDS D
+                                                    on M.seq = D.seq
+                                                where M.collection_date = current_date()
+                                                    group by D.word, M.condition_type
+			                            '''
