@@ -1,9 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
+from konlpy.tag import Okt
 import re
 
 #피플인잡 메인 도메인
-main_domain = 'https://www.peoplenjob.com/'
+main_domain = 'https://www.peoplenjob.com'
 
 #메인 화면에서 IT관련된 카테고리 뽑기
 def get_IT_div(html_datas, key_word) :
@@ -20,19 +21,19 @@ def get_detail_url_list(url) :
 
     detail_url = []
 
-    response = requests.get(url + 'jobs/work')
+    response = requests.get(url + '/jobs/work')
     raw_html_data = BeautifulSoup(response.text, 'html.parser')
 
     temp_html_data1 = raw_html_data.findAll('div', {'class': 'panel'})
 
-    temp_html_data2_1 = get_IT_div(temp_html_data1, '인터넷')
+    #영업에 가까워서 일단 제거
+    #temp_html_data2_1 = get_IT_div(temp_html_data1, '인터넷')
+    # temp_html_data3_1 = temp_html_data2_1.select('li > a')
+    #for temp_data4 in temp_html_data3_1 :
+    #    detail_url.append(temp_data4.get('href'))
+
     temp_html_data2_2 = get_IT_div(temp_html_data1, '정보통신,전자,전산')
-
-    temp_html_data3_1 = temp_html_data2_1.select('li > a')
     temp_html_data3_2 = temp_html_data2_2.select('li > a')
-
-    for temp_data4 in temp_html_data3_1 :
-        detail_url.append(temp_data4.get('href'))
 
     for temp_data4 in temp_html_data3_2 :
         detail_url.append(temp_data4.get('href'))
@@ -56,13 +57,8 @@ def start_crawling(main_domain, detail_url_list) :
         while True:
             print("requesting url >>>>>> " + main_domain + detail_url + '&page=' + str(page_count))
             response = requests.get(main_domain + detail_url + '&page=' + str(page_count))
+            detail_detail_url_list.append(main_domain + detail_url + '&page=' + str(page_count))
             raw_html_data = BeautifulSoup(response.text, 'html.parser')
-
-            temp_html_data1 = raw_html_data.findAll('td',{'class':'job-title'})
-
-            for temp_html_data2 in temp_html_data1 :
-                temp_html_data3 = temp_html_data2.find('a').get('href')
-                detail_detail_url_list.append(temp_html_data3)
 
             if not raw_html_data.find('ul',{'class':'pagination'}) :
                 print("There isn't another page..... moving to next category")
@@ -101,10 +97,21 @@ def get_detail_page_url(detail_detail_url_list) :
             if main_domain in  temp_html_data3:
                 get_detail_page_url_list.append(temp_html_data3)
 
-    print(get_detail_page_url_list)
-
     print("Function get_detail_page_url End..............")
 
-detail_url_list = get_detail_url_list(main_domain)
-start_crawling(main_domain, detail_url_list)
-#get_detail_page_url(["https://www.peoplenjob.com//jobs?type=work&work_code_id=146&page=1","https://www.peoplenjob.com//jobs?type=work&work_code_id=146&page=2"])
+    return get_detail_page_url_list
+
+#상세페이지에서 데이터 가져오기
+def get_detail_raw_text(get_detail_page_url_list):
+        for get_detail_page_url in get_detail_page_url_list:
+            response = requests.get(get_detail_page_url)
+            raw_html_data = BeautifulSoup(response.text, 'html.parser')
+            temp_html_data1 = raw_html_data.find('div', {'class': 'divDetailWrap'})
+            nouns = Okt().nouns(temp_html_data1.text)
+            eng_nouns = re.findall(r'[a-zA-Z\-]{2,}', temp_html_data1.text)
+            print(nouns+eng_nouns)
+
+#detail_url = get_detail_url_list(main_domain)
+#detail_detail_url_list = start_crawling(main_domain, detail_url)
+get_detail_page_url_list = get_detail_page_url(['https://www.peoplenjob.com/jobs?type=work&work_code_id=137&page=1'])
+get_detail_raw_text(get_detail_page_url_list)
