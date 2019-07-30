@@ -1,45 +1,61 @@
-import requests
-from bs4 import BeautifulSoup
-from konlpy.tag import Okt
 import re
 
-#피플인잡 메인 도메인
-main_domain = 'https://www.peoplenjob.com'
+import requests
 
-#메인 화면에서 IT관련된 카테고리 뽑기
-def get_IT_div(html_datas, key_word) :
-    print("Function get_IT_div Start..............")
-    for html_data in html_datas :
-        html_data_div = html_data.find('div', {'class' : 'panel-heading'})
-        if html_data_div.find('a').text == key_word :
-            print("Function get_IT_div End..............")
-            return html_data
+from bs4 import BeautifulSoup
+from konlpy.tag import Okt
 
-#IT관련된 카테고리 URL 리스트로 뽑기
-def get_detail_url_list(url) :
+from db.db_service import DBService
+from project.config import Config
+from model.condition_type import ConditionType
+from db.query_mapper import QueryMapper
+
+
+
+#피플인잡 메인 도메인, SEQ 가져오기
+#Input : 서비스명
+#Output : 서비스 Seq, 서비스 main domain
+def _get_peopleinjob_info(service_name) :
+    db_service = DBService(host=Config.get('db.url')
+                           , user=Config.get('db.username')
+                           , password=Config.get('db.password')
+                           , db=Config.get('db.name')
+                           , charset='utf8')
+
+    return db_service.select_one(QueryMapper.select_recruitment_site_query, service_name)
+
+#해당 카테고리에서 분류 URL 리스트로 뽑기
+#Input : 메인도메인, 카테고리명
+#Output : 분류리스트
+def _get_detail_url_list(main_domain, category_name) :
+    detail_url = []
     print("Function get_detail_url_list Start..............")
 
-    detail_url = []
-
-    response = requests.get(url + '/jobs/work')
+    response = requests.get(main_domain + '/jobs/work')
     raw_html_data = BeautifulSoup(response.text, 'html.parser')
 
-    temp_html_data1 = raw_html_data.findAll('div', {'class': 'panel'})
+    html_category_list = raw_html_data.findAll('div', {'class': 'panel'})
 
-    #영업에 가까워서 일단 제거
-    #temp_html_data2_1 = get_IT_div(temp_html_data1, '인터넷')
-    # temp_html_data3_1 = temp_html_data2_1.select('li > a')
-    #for temp_data4 in temp_html_data3_1 :
-    #    detail_url.append(temp_data4.get('href'))
+    #html_category_data = get_IT_div(html_category_list, category_name)
+    html_category_data = ""
+    for html_category in html_category_list :
+        html_data_div = html_category.find('div', {'class' : 'panel-heading'})
+        if html_data_div.find('a').text == category_name :
+            html_category_data = html_data_div
 
-    temp_html_data2_2 = get_IT_div(temp_html_data1, '정보통신,전자,전산')
-    temp_html_data3_2 = temp_html_data2_2.select('li > a')
+    temp_html_data3_2 = html_category_data.select('li > a')
+    print(temp_html_data3_2)
 
     for temp_data4 in temp_html_data3_2 :
         detail_url.append(temp_data4.get('href'))
 
     print("Function get_detail_url_list End..............")
     return detail_url
+
+main_domain = _get_peopleinjob_info('PeopleInJob')
+_get_detail_url_list(main_domain,'정보통신,전자,전산')
+
+
 
 
 #main_domin : 컨텍스트루트, detail_list : IT->웹개발자,앱개발자,퍼블리셔 등등 소분류 카테고리 접근 URL
@@ -113,5 +129,5 @@ def get_detail_raw_text(get_detail_page_url_list):
 
 #detail_url = get_detail_url_list(main_domain)
 #detail_detail_url_list = start_crawling(main_domain, detail_url)
-get_detail_page_url_list = get_detail_page_url(['https://www.peoplenjob.com/jobs?type=work&work_code_id=137&page=1'])
-get_detail_raw_text(get_detail_page_url_list)
+#get_detail_page_url_list = get_detail_page_url(['https://www.peoplenjob.com/jobs?type=work&work_code_id=137&page=1'])
+#get_detail_raw_text(get_detail_page_url_list)

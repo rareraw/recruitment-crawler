@@ -33,8 +33,8 @@ class QueryMapper:
                                 %s);
                             '''
 
-    select_recruitment_site_query = '''SELECT * FROM RECRUITMENT_SITES
-                                        WHERE name = %s                            
+    select_recruitment_site_query = '''SELECT seq, crwaling_root_urls FROM RECRUITMENT_SITES
+                                        WHERE name = %s AND is_use = '1'                         
                                     '''
 
     insert_keyword_statistics_query = '''insert into KEYWORD_STATISTICS(keyword, count, collection_date)
